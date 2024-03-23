@@ -13,8 +13,11 @@ app.use(express.json());
 app.use(express.urlencoded());
 
 app.use((req, res, next) => {
-  // "https://ecommerce-prod-application.netlify.app"
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  // "http://localhost:5173"
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://main--ui-assessment-frontend.netlify.app/"
+  );
   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
   res.header(
     "Access-Control-Allow-Headers",
