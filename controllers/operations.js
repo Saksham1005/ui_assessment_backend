@@ -29,10 +29,10 @@ module.exports.add = async (req, res) => {
     // Initialization
     let component = req.params.component;
 
+    //Creating a new component entry which will be later on updated with description.
     let component_object = await Component.create({
       _id: new ObjectId(),
       component,
-      description: "",
     });
 
     let type = await Type.findOne({ component });
@@ -117,6 +117,7 @@ module.exports.count = async (req, res) => {
   try {
     let types = await Type.find({}).lean().exec();
 
+    // Finding total API counts for each components.
     let total_count = types.reduce((total, type) => total + type.count);
 
     return res.status(200).json({
