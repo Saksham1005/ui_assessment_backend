@@ -118,7 +118,11 @@ module.exports.count = async (req, res) => {
     let types = await Type.find({}).lean().exec();
 
     // Finding total API counts for each components.
-    let total_count = types.reduce((total, type) => total + type.count);
+    let total_count = 0;
+
+    for (let type of types) {
+      total_count += type.count;
+    }
 
     return res.status(200).json({
       message: "Fetched the total count of Add and Update APIs called!",
