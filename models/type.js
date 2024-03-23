@@ -3,20 +3,20 @@ const validator = require("validator");
 
 const Type_Schema = new mongoose.Schema({
   document: {
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId,
   },
 
-  component:{
+  component: {
     type: Number,
     required: true,
     min: 1,
-    max: 3
+    max: 3,
   },
 
-  count:{
+  count: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 });
 
 Type_Schema.index(

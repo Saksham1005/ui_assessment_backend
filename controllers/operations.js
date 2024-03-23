@@ -29,9 +29,21 @@ module.exports.add = async (req, res) => {
     // Initialization
     let component = req.params.component;
 
-    let component_object= await Component.create({component});
+    let component_object = await Component.create({
+      _id: new ObjectId(),
+      component,
+      description: "",
+    });
 
-    await Type.findOneAndUpdate({component}, { document: component_object.id, {$inc: {count: 1}} } );
+    let type = await Type.findOne({ component });
+
+    if (!type) {
+      type = await Type.create({ component });
+    }
+
+    type.document = component_object._id;
+    type.count += 1;
+    await type.save();
 
     return res.status(200).json({
       message: "Entry added in collection!",
@@ -61,19 +73,35 @@ module.exports.update = async (req, res) => {
     let component = req.body.component;
     let description = req.body.description;
 
-    let type_object= await Type.findOne({component});
+    let type_object = await Type.findOne({ component }).lean();
 
-    let component_object; 
+    let component_object;
 
     // If first time component is updated without entry in Type collection.
-    if(!type_object){
-      component_object= await Component.create({component, description});
-    }
-    else{
-      component_object= await Component.findOneAndUpdate({id: type_object.document}, {description});
-    }
+    if (!type_object) {
+      component_object = await Component.create({
+        _id: new ObjectId(),
+        component,
+        description,
+      });
 
-    await Type.findOneAndUpdate({component}, {document: component_object.id, {$inc: {count: 1}}});
+      await Type.create({
+        component,
+        description,
+        document: component_object.id,
+        count: 1,
+      });
+    } else {
+      component_object = await Component.findOneAndUpdate(
+        { _id: type_object.document },
+        { description }
+      );
+
+      await Type.findOneAndUpdate(
+        { component },
+        { document: component_object.id, $inc: { count: 1 } }
+      );
+    }
 
     return res.status(200).json({
       message: "Updated the Entry in the Collection!",
@@ -87,13 +115,9 @@ module.exports.update = async (req, res) => {
 
 module.exports.count = async (req, res) => {
   try {
-    let types= await Type.find({}).lean().exec();
+    let types = await Type.find({}).lean().exec();
 
-    let total_count=0;
-
-    for(let type: types){
-      total_count+= type.count; 
-    }
+    let total_count = types.reduce((total, type) => total + type.count);
 
     return res.status(200).json({
       message: "Fetched the total count of Add and Update APIs called!",
